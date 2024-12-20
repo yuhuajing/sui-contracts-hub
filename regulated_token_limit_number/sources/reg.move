@@ -5,7 +5,7 @@ module regulated_token::reg;
     use sui::coin::{Self, TreasuryCap};
     use sui::token::{Self, Token, TokenPolicy};
 
-    use regulated_token::denylist_rule::{Self as denylist, Denylist};
+    use regulated_token::denylist_rule::{Self as denylist, Limiter};
 
     const ENotAuthorized: u64 = 0;
     /// The OTW and the type for the Token
@@ -50,11 +50,11 @@ module regulated_token::reg;
        // token::allow(&mut policy, &policy_cap, token::transfer_action(), ctx);
         token::allow(&mut policy, &policy_cap, token::spend_action(), ctx);
 
-        // token::add_rule_for_action<REG, Denylist>(
+        // token::add_rule_for_action<REG, Limiter>(
         //     &mut policy, &policy_cap, token::transfer_action(), ctx
         // );
 
-        token::add_rule_for_action<REG, Denylist>(
+        token::add_rule_for_action<REG, Limiter>(
             &mut policy, &policy_cap, token::spend_action(), ctx
         );
 

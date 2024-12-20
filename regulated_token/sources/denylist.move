@@ -70,6 +70,23 @@ module regulated_token::denylist_rule;
         }
     }
 
+    /// Adds records to the `denylist_rule` for a given action. The Policy
+    /// owner can batch-add records.
+    public entry fun add_record<T>(
+    policy: &mut TokenPolicy<T>,
+    cap: &TokenPolicyCap<T>,
+    address: address,
+    ctx: &mut TxContext
+    ) {
+        if (!has_config(policy)) {
+            token::add_rule_config(Denylist {}, policy, cap, bag::new(ctx), ctx);
+        };
+
+        let config_mut = config_mut(policy, cap);
+
+        bag::add(config_mut,address, true)
+    }
+
     /// Removes records from the `denylist_rule` for a given action. The Policy
     /// owner can batch-remove records.
     public entry fun remove_records<T>(
@@ -88,6 +105,21 @@ module regulated_token::denylist_rule;
         };
     }
 
+
+    /// Removes records from the `denylist_rule` for a given action. The Policy
+    /// owner can batch-remove records.
+    public entry fun remove_record<T>(
+        policy: &mut TokenPolicy<T>,
+        cap: &TokenPolicyCap<T>,
+        address: address,
+        _ctx: &mut TxContext
+    ) {
+        let config_mut = config_mut(policy, cap);
+
+        if (bag::contains(config_mut, address)) {
+            let _: bool = bag::remove(config_mut, address);
+        };
+    }
     // === Internal ===
 
     fun has_config<T>(self: &TokenPolicy<T>): bool {
