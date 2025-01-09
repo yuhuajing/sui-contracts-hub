@@ -22,24 +22,24 @@ public struct MY_COIN() has drop;
 // Module initializer is called once on module publish. A treasury
 // cap is sent to the publisher, who then controls minting and burning.
 fun init(witness: MY_COIN, ctx: &mut TxContext) {
-let (treasury, metadata) = coin::create_currency(
-    witness,
-    6,
-    b"MY_COIN",
-    b"NAME",
-    b"This is the describscription",
-    option::some(url::new_unsafe_from_bytes(b"https://i.imgur.com/j2EuFh5.png")),
-    ctx,
-);
+    let (treasury, metadata) = coin::create_currency(
+        witness,
+        6,
+        b"MY_COIN",
+        b"NAME",
+        b"This is the describscription",
+        option::some(url::new_unsafe_from_bytes(b"https://i.imgur.com/j2EuFh5.png")),
+        ctx,
+    );
 
-//coin::mint_and_transfer(&mut treasury, 10000000000000000000, ctx.sender(), ctx);
-// Freezing this object makes the metadata immutable, including the title, name, and icon image.
-// If you want to allow mutability, share it with public_share_object instead.
-transfer::public_freeze_object(metadata);
-transfer::public_share_object(treasury);
-// transfer::public_transfer(treasury, ctx.sender());
+    //coin::mint_and_transfer(&mut treasury, 10000000000000000000, ctx.sender(), ctx);
+    // Freezing this object makes the metadata immutable, including the title, name, and icon image.
+    // If you want to allow mutability, share it with public_share_object instead.
+    transfer::public_freeze_object(metadata);
+    transfer::public_share_object(treasury);
+    // transfer::public_transfer(treasury, ctx.sender());
 
-let admincap = ADMINCAP{id: object::new(ctx), owner:ctx.sender()};
+    let admincap = ADMINCAP{id: object::new(ctx), owner:ctx.sender()};
     transfer::public_transfer(admincap, ctx.sender())
 }
 
@@ -55,6 +55,17 @@ public entry fun mint(
     assert!(cap.owner == ctx.sender(), ENotAuthorized);
     let coin = coin::mint(treasury_cap, amount, ctx);
     transfer::public_transfer(coin, recipient)
+}
+
+public entry fun minto(cap: &ADMINCAP,treasury_cap: &mut TreasuryCap<MY_COIN>, to: address, amount: u64, ctx: &mut TxContext) {
+    assert!(cap.owner == ctx.sender(), ENotAuthorized);
+    coin::mint_and_transfer(treasury_cap, amount, to, ctx);
+}
+
+///CRTICIAL
+public entry fun burn_mint_cap(cap: &ADMINCAP,treasury_cap: TreasuryCap<MY_COIN>, ctx: &mut TxContext){
+    assert!(cap.owner == ctx.sender(), ENotAuthorized);
+    transfer::public_freeze_object(treasury_cap);
 }
 
 public entry fun transfer(
